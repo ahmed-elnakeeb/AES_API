@@ -1,12 +1,14 @@
 from transformers import AutoTokenizer, AutoModelForSequenceClassification,pipeline
-from sentence_transformers import CrossEncoder
+from sentence_transformers import CrossEncoder,SentenceTransformer, util
 import os
+
 class TransformersTools:
     def __init__(self):
         self.cola_model=None
         self.sts_modle=None
         self.zero_shot_model=None
         self.sentiment_model=None
+        self.paraprase_detection_model=None
     
     def sts(self,sent1:str,sent2:str,model_name="cross-encoder/stsb-roberta-large"):
         if not self.sts_modle: 
@@ -55,7 +57,19 @@ class TransformersTools:
                 sentiment_tok.save_pretrained(model_name)
         d={"text": text,"text_pair":text_pair }
         return self.sentiment_model(d)
-    
+
+    def paraprase_detection(self,text:str,text_pair:str,model_name:str="sentence-transformers/paraphrase-MiniLM-L6-v2"):
+        if not self.paraprase_detection_model: 
+            self.paraprase_detection_model = SentenceTransformer(model_name)
+            paraprase_detection_tok=AutoTokenizer.from_pretrained(model_name)
+            #save model to disk if not exist
+            if not os.path.exists(model_name):
+                self.paraprase_detection_model.save(model_name)
+                paraprase_detection_tok.save_pretrained(model_name)
+        emb1 = self.paraprase_detection_model.encode(text)
+        emb2 = self.paraprase_detection_model.encode(text_pair)
+        cos_sim = util.cos_sim(emb1, emb2)
+        return min( 5.000, float((cos_sim[0][0])*5).__round__(3))
 
         
 

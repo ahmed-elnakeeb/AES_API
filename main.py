@@ -34,7 +34,16 @@ def sentiment_analysis(text,text_pair:str=None):
         return 'normal'
     else:
         return 'bad'
-
+@app.get("/api/paraphrase_detection/{sent1}/{sent2}")
+def paraprase_detection(sent1,sent2):
+    result=t.paraprase_detection(sent1,sent2)
+    if result>.6:
+        return 'good'
+    elif result>.3:
+        return 'normal'
+    else:
+        return "bad"
+    
 @app.get("/api/clear")
 def clear():
     t.clear()
@@ -44,7 +53,7 @@ def main():
     import uvicorn
 
     debug=True
-    uvicorn.run(app, host="localhost", port=8000)
+    uvicorn.run(app, host="localhost", port=8087)
 
 
 
